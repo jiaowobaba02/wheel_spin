@@ -77,12 +77,12 @@ void on_draw_button_clicked(GtkWidget *widget, gpointer data) {
     GtkWidget *again_button = gtk_button_new_with_label("再来一次");
     gtk_widget_set_size_request(again_button, 100, 50);
     g_signal_connect(again_button, "clicked", G_CALLBACK(on_draw_button_clicked), result_box);
-    gtk_box_pack_start(GTK_BOX(result_box), again_button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(result_box), again_button, TRUE, FALSE, 0);
 
     GtkWidget *reset_button = gtk_button_new_with_label("退出");
     gtk_widget_set_size_request(reset_button, 100, 50);
     g_signal_connect(reset_button, "clicked", G_CALLBACK(gtk_main_quit), NULL);
-    gtk_box_pack_start(GTK_BOX(result_box), reset_button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(result_box), reset_button, TRUE, FALSE, 0);
 
     gtk_widget_show_all(GTK_WIDGET(result_box));
 }
@@ -111,19 +111,19 @@ int main(int argc, char *argv[]) {
     gtk_container_add(GTK_CONTAINER(window), hbox);
 
     GtkWidget *vbox_left = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_box_pack_start(GTK_BOX(hbox), vbox_left, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), vbox_left, FALSE, TRUE, 0);
 
     GtkWidget *label = gtk_label_new("请选择一次抽多少个人：");
     gtk_box_pack_start(GTK_BOX(vbox_left), label, TRUE, TRUE, 0);
 
     GtkWidget *spin_button = gtk_spin_button_new_with_range(1, 6, 1);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_button), 3);
-    gtk_box_pack_start(GTK_BOX(vbox_left), spin_button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox_left), spin_button, FALSE, FALSE, 0);
 
     GtkWidget *submit_button = gtk_button_new_with_label("确定");
     gtk_widget_set_size_request(submit_button, 100, 50);
     g_signal_connect(submit_button, "clicked", G_CALLBACK(on_submit_button_clicked), spin_button);
-    gtk_box_pack_start(GTK_BOX(vbox_left), submit_button, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox_left), submit_button, FALSE, FALSE, 0);
 
     GtkWidget *vbox_right = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_box_pack_start(GTK_BOX(hbox), vbox_right, TRUE, TRUE, 0);
