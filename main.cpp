@@ -46,8 +46,19 @@ int turns() {
 void on_draw_button_clicked(GtkWidget *widget, gpointer data) {
     init();
     sleep(1);
-    for (int i = 1; i <= T; i++) {
-        List[i] = turns();
+    for (int i = 1; i <= T; ) {
+        int candidate = turns();
+        bool duplicate = false;
+        for (int j = 1; j < i; j++) {
+            if (List[j] == candidate) {
+                duplicate = true;
+                break;
+            }
+        }
+        if (!duplicate) {
+            List[i] = candidate;
+            i++;
+        }
     }
 
     GtkWidget *result_box = GTK_WIDGET(data);
