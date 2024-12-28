@@ -5,6 +5,7 @@
 #include <string>
 #include <ctime>
 #include <cstdlib>
+#include <unistd.h>
 
 using namespace std;
 
@@ -53,6 +54,19 @@ int turns() {
     return seed;
 }
 
+gboolean apply_animation(gpointer data) {
+    GtkWidget *widget = GTK_WIDGET(data);
+    GtkStyleContext *context = gtk_widget_get_style_context(widget);
+    gtk_style_context_add_class(context, "slide-in-active");
+    return G_SOURCE_REMOVE; // 停止计时器
+}
+/*
+gboolean show_name_label(gpointer data){
+	GtkWidget *label = GTK_WIDGET(data);
+	gtk_widget_(label);
+	return G_SOURCE_REMOVE;
+}
+*/
 void on_draw_button_clicked(GtkWidget *widget, gpointer data) {
     init();
     if (name_num <= 0) {
@@ -87,7 +101,7 @@ void on_draw_button_clicked(GtkWidget *widget, gpointer data) {
 
     GtkWidget *label = gtk_label_new("恭喜以下人员抽中了：");
     PangoAttrList *attr_list = pango_attr_list_new();
-    PangoAttribute *attr_size = pango_attr_size_new(36 * PANGO_SCALE);
+    PangoAttribute *attr_size = pango_attr_size_new(24 * PANGO_SCALE);
     pango_attr_list_insert(attr_list, attr_size);
     gtk_label_set_attributes(GTK_LABEL(label), attr_list);
     gtk_box_pack_start(GTK_BOX(result_box), label, TRUE, TRUE, 0);
@@ -95,11 +109,22 @@ void on_draw_button_clicked(GtkWidget *widget, gpointer data) {
     for (int i = 0; i < T; i++) {
         string result_text = names[List[i]];
         GtkWidget *name_label = gtk_label_new(result_text.c_str());
+
+        // 设置Pango文字样式
         PangoAttrList *attr_list_name = pango_attr_list_new();
         PangoAttribute *attr_size_name = pango_attr_size_new(36 * PANGO_SCALE);
         pango_attr_list_insert(attr_list_name, attr_size_name);
         gtk_label_set_attributes(GTK_LABEL(name_label), attr_list_name);
+
+        // 设置CSS样式
+        GtkStyleContext *context = gtk_widget_get_style_context(name_label);
+        gtk_style_context_add_class(context, "slide-in");
         gtk_box_pack_start(GTK_BOX(result_box), name_label, TRUE, TRUE, 0);
+
+        // 延迟添加"slide-in-active"类以实现动画效果
+        g_timeout_add(50 * (i + 1), apply_animation, name_label);
+        
+        sleep(0.5);
     }
 
     GtkWidget *again_button = gtk_button_new_with_label("再来一次");
@@ -128,9 +153,16 @@ void on_submit_button_clicked(GtkWidget *widget, gpointer data) {
 }
 
 int main(int argc, char *argv[]) {
-    srand(time(0)); // 在main函数中初始化随机数种子
+    srand(time(0)); // 初始化随机数种子
 
     gtk_init(&argc, &argv);
+
+    GtkCssProvider *provider = gtk_css_provider_new();
+    GFile *css_file = g_file_new_for_path("style.css");
+    gtk_css_provider_load_from_file(provider, css_file, NULL);
+    g_object_unref(css_file);
+    gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+    g_object_unref(provider);
 
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "抽奖程序");
@@ -145,8 +177,8 @@ int main(int argc, char *argv[]) {
 
     GtkWidget *label = gtk_label_new("请选择一次抽多少个人：");
     gtk_box_pack_start(GTK_BOX(vbox_left), label, TRUE, TRUE, 0);
-    GtkWidget *label_2=gtk_label_new("（已重复的人已删去）");
-    gtk_box_pack_start(GTK_BOX(vbox_left),label_2,TRUE,TRUE,0);
+    GtkWidget *label_2 = gtk_label_new("（已重复的人已删去）");
+    gtk_box_pack_start(GTK_BOX(vbox_left), label_2, TRUE, TRUE, 0);
     GtkWidget *spin_button = gtk_spin_button_new_with_range(1, 6, 1);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_button), 3);
     gtk_box_pack_start(GTK_BOX(vbox_left), spin_button, FALSE, FALSE, 0);
