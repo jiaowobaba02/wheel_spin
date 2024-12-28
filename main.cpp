@@ -1,17 +1,23 @@
 #include <gtk/gtk.h>
-#include <bits/stdc++.h>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+#include <cstdlib>
+
 using namespace std;
 
 int name_num = 0;
 int seed = 0;
 int T = 3;
-int List[10];
-string names[114514];
+vector<int> List;
+vector<string> names;
 
 int get_file_lines(const string &filename) {
     ifstream file(filename);
     if (!file.is_open()) {
-        cerr << "无法打开：" << filename << " 请检查是否有其他资源占用或权限是否不足";
+        cerr << "无法打开：" << filename << " 请检查是否有其他资源占用或权限是否不足" << endl;
         return -1;
     }
     int line_num = 0;
@@ -24,17 +30,21 @@ int get_file_lines(const string &filename) {
 }
 
 void init() {
-    srand(time(0));
     name_num = get_file_lines("./name.txt");
+    if (name_num <= 0) {
+        cerr << "文件读取错误或文件为空" << endl;
+        return;
+    }
     seed = rand() % name_num + 1;
     ifstream fin("./name.txt");
+    names.resize(name_num + 1);
     for (int i = 1; i <= name_num; i++) {
         getline(fin, names[i]);
     }
+    fin.close();
 }
 
 int turns() {
-    srand(time(0));
     unsigned int hash = 11451;
     for (char c : names[seed]) {
         hash = ((hash << 5) + hash) + c;
@@ -45,11 +55,18 @@ int turns() {
 
 void on_draw_button_clicked(GtkWidget *widget, gpointer data) {
     init();
+    if (name_num <= 0) {
+        return;
+    }
+
+    List.clear();
+    List.resize(T);
     sleep(1);
-    for (int i = 1; i <= T; ) {
+
+    for (int i = 0; i < T; ) {
         int candidate = turns();
         bool duplicate = false;
-        for (int j = 1; j < i; j++) {
+        for (int j = 0; j < i; j++) {
             if (List[j] == candidate) {
                 duplicate = true;
                 break;
@@ -75,7 +92,7 @@ void on_draw_button_clicked(GtkWidget *widget, gpointer data) {
     gtk_label_set_attributes(GTK_LABEL(label), attr_list);
     gtk_box_pack_start(GTK_BOX(result_box), label, TRUE, TRUE, 0);
 
-    for (int i = 1; i <= T; i++) {
+    for (int i = 0; i < T; i++) {
         string result_text = names[List[i]];
         GtkWidget *name_label = gtk_label_new(result_text.c_str());
         PangoAttrList *attr_list_name = pango_attr_list_new();
@@ -111,6 +128,8 @@ void on_submit_button_clicked(GtkWidget *widget, gpointer data) {
 }
 
 int main(int argc, char *argv[]) {
+    srand(time(0)); // 在main函数中初始化随机数种子
+
     gtk_init(&argc, &argv);
 
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -126,7 +145,8 @@ int main(int argc, char *argv[]) {
 
     GtkWidget *label = gtk_label_new("请选择一次抽多少个人：");
     gtk_box_pack_start(GTK_BOX(vbox_left), label, TRUE, TRUE, 0);
-
+    GtkWidget *label_2=gtk_label_new("（已重复的人已删去）");
+    gtk_box_pack_start(GTK_BOX(vbox_left),label_2,TRUE,TRUE,0);
     GtkWidget *spin_button = gtk_spin_button_new_with_range(1, 6, 1);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_button), 3);
     gtk_box_pack_start(GTK_BOX(vbox_left), spin_button, FALSE, FALSE, 0);
